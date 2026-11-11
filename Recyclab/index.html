@@ -258,6 +258,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .tip-btn svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:.25s}
 .tip-btn:hover{transform:translateY(-6px) scale(1.05);background:var(--claro);box-shadow:0 12px 24px rgba(46,125,50,.22)}
 .tip-btn:hover svg{transform:rotate(-6deg) scale(1.08)}
+.tip-btn.conimg{padding:0;overflow:hidden}
+.tip-btn img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;transition:.25s}
+.tip-btn:hover img{transform:scale(1.08)}
 .hint-click{font-weight:800;color:var(--verde);margin:clamp(6px,1.4vh,12px) 0 0;animation:latido 1.8s ease-in-out infinite}
 @keyframes latido{50%{transform:scale(1.06)}}
 </style>
@@ -435,7 +438,7 @@ const IMG_RESULTADO_ALTO = "resultado-alto.png";
 /* ============ IMÁGENES DE LOS CONSEJOS ============
    Una por cada logo del paso de recomendaciones (en orden), guardadas en "img".
    Si el archivo no existe, la tarjeta muestra el logo. */
-const IMG_CONSEJOS = ["consejo-1.jpg","consejo-2.png","consejo-3.png","consejo-4.png","consejo-5.png","consejo-6.png"];
+const IMG_CONSEJOS = ["consejo-1.jpg","consejo-2.jpg","consejo-3.jpg","consejo-4.jpg","consejo-5.jpg","consejo-6.jpg"];
 const IMG_CESTOS = { org:"", rec:"", no:"" };   // opcional: logos propios de cada cesto, ej: org:"logo-organico.png"
 const objetos = [
   {n:"Cáscara de plátano",      e:"🍌", t:"org", img:"cascara-platano.jpg"},
@@ -612,14 +615,28 @@ function mostrarRecomendaciones(){
   document.getElementById("resumenReco").textContent=`${estado.nombre}, tus consejos para ${estado.personas} ${estado.personas===1?"persona":"personas"}:`;
   document.getElementById("listaReco").innerHTML=consejosActuales.map((c,i)=>
     `<li><button type="button" class="tip-btn" onclick="abrirConsejo(${i})" aria-label="${c.t}" title="${c.t}">${svgIco(c.ico)}</button></li>`).join("");
+  document.querySelectorAll(".tip-btn").forEach((b,i)=>{
+    cargarImgConsejo(i,im=>{im.alt=consejosActuales[i].t;b.textContent="";b.appendChild(im);b.classList.add("conimg");});
+  });
+}
+/* Busca la imagen del consejo; si el nombre/extensión no coincide, prueba jpg, jpeg, png y webp */
+function cargarImgConsejo(i,ok){
+  const base=IMG_CONSEJOS[i]; if(!base)return;
+  const raiz=base.replace(/\.[^.]+$/,"");
+  const cand=[base].concat(["jpg","jpeg","png","webp","JPG","JPEG","PNG"].map(e=>raiz+"."+e)).filter((v,k,a)=>a.indexOf(v)===k);
+  (function prueba(k){
+    if(k>=cand.length)return;
+    const im=new Image();
+    im.onload=()=>ok(im); im.onerror=()=>prueba(k+1);
+    im.src=CARPETA_IMG+cand[k];
+  })(0);
 }
 function abrirConsejo(i){
   const c=consejosActuales[i], img=document.getElementById("cImg"), ov=document.getElementById("ovConsejo");
   document.getElementById("cTitulo").textContent=c.t;
   document.getElementById("cTexto").textContent=c.x;
   img.innerHTML=svgIco(c.ico);
-  const f=IMG_CONSEJOS[i];
-  if(f){const im=new Image();im.alt=c.t;im.onload=()=>{img.textContent="";img.appendChild(im);};im.src=CARPETA_IMG+f;}
+  cargarImgConsejo(i,im=>{im.alt=c.t;img.textContent="";img.appendChild(im);});
   ov.classList.remove("cerrando");ov.classList.add("abierto");
 }
 function cerrarConsejo(){
