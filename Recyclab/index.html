@@ -261,6 +261,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .tip-btn.conimg{padding:0;overflow:hidden}
 .tip-btn img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;transition:.25s}
 .tip-btn:hover img{transform:scale(1.08)}
+.frase{display:none;width:100%;justify-content:center;margin-bottom:clamp(6px,1.4vh,12px)}
+.frase.ok{display:flex;animation:entra .6s both}
+.frase img{max-width:100%;max-height:clamp(90px,26vh,240px);object-fit:contain;border-radius:16px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
 .hint-click{font-weight:800;color:var(--verde);margin:clamp(6px,1.4vh,12px) 0 0;animation:latido 1.8s ease-in-out infinite}
 @keyframes latido{50%{transform:scale(1.06)}}
 </style>
@@ -382,6 +385,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   <!-- PASO 6: resultados abiertos desde el QR -->
   <section class="card centro" id="paso6">
+    <div class="frase" id="rFrase"></div>
     <h2>Resultados de tu hogar</h2>
     <div class="chip"><i class="punto"></i><span id="rSaludo"></span></div>
     <div class="titulo-sec"><span>Resumen anual</span></div>
@@ -396,6 +400,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <small>Podrías convertir en compost</small>
         <div class="valor"><b id="rCompost">0</b><em>kg/año</em></div>
       </div>
+    </div>
+    <div class="titulo-sec"><span>Promedios</span></div>
+    <div class="stats tres">
+      <div class="stat mini"><div class="mi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></div><b id="rDiario">0</b><small>kg por día</small></div>
+      <div class="stat mini"><div class="mi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></div><b id="rMensual">0</b><small>kg por mes</small></div>
+      <div class="stat mini"><div class="mi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v9h9"/></svg></div><b>24.8%</b><small>aprovechable</small></div>
     </div>
     <div class="titulo-sec"><span>Reto de clasificación</span></div>
     <div class="resultado">
@@ -831,9 +841,27 @@ function mostrarCompartido(){
   document.getElementById("rMsg").textContent=ac>=5?"¡Excelente clasificador!":"¡Sigue practicando!";
   ir(6);
   contar("rAnual",anual,1);contar("rCompost",comp,1);
+  document.getElementById("rDiario").textContent=(anual/365).toFixed(2);
+  document.getElementById("rMensual").textContent=(anual/12).toFixed(1);
+  cargarFrase();
   const barra=document.getElementById("rBarra");barra.style.width="0";
   setTimeout(()=>{barra.style.width=Math.min(100,ac/tot*100)+"%";},150);
   return true;
+}
+/* Imagen que aparece arriba al escanear el QR: guárdala como img/frase.png */
+const IMG_FRASE = "frase.png";
+function cargarFrase(){
+  const cont=document.getElementById("rFrase");
+  if(cont.firstChild)return;
+  const raiz=IMG_FRASE.replace(/\.[^.]+$/,"");
+  const cand=[IMG_FRASE].concat(["png","jpg","jpeg","webp","PNG","JPG"].map(e=>raiz+"."+e)).filter((v,k,a)=>a.indexOf(v)===k);
+  (function prueba(k){
+    if(k>=cand.length)return;
+    const im=new Image(); im.alt="";
+    im.onload=()=>{cont.appendChild(im);cont.classList.add("ok");};
+    im.onerror=()=>prueba(k+1);
+    im.src=CARPETA_IMG+cand[k];
+  })(0);
 }
 function nuevoCalculo(){ history.replaceState(null,"",location.pathname+location.search); reiniciar(); }
 
