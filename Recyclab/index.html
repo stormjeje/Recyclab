@@ -261,9 +261,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .tip-btn.conimg{padding:0;overflow:hidden}
 .tip-btn img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;transition:.25s}
 .tip-btn:hover img{transform:scale(1.08)}
+#paso6.visible{justify-content:flex-start;justify-content:safe center}
 .frase{display:none;width:100%;justify-content:center;margin-bottom:clamp(6px,1.4vh,12px)}
 .frase.ok{display:flex;animation:entra .6s both}
-.frase img{max-width:100%;max-height:clamp(90px,26vh,240px);object-fit:contain;border-radius:16px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
+.frase img{max-width:100%;max-height:clamp(80px,22vh,220px);object-fit:contain;border-radius:16px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
 .hint-click{font-weight:800;color:var(--verde);margin:clamp(6px,1.4vh,12px) 0 0;animation:latido 1.8s ease-in-out infinite}
 @keyframes latido{50%{transform:scale(1.06)}}
 </style>
@@ -368,7 +369,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <ul class="reco" id="listaReco"></ul>
     <p class="hint-click">Dale click para ver tus consejos</p>
     <div class="fila">
-      <button class="sec" onclick="ir(3)">Atrás</button>
+      <button class="sec" onclick="atrasReco()">Atrás</button>
       <button onclick="generarQR()">Obtener mi código QR</button>
     </div>
   </section>
@@ -385,10 +386,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   <!-- PASO 6: resultados abiertos desde el QR -->
   <section class="card centro" id="paso6">
-    <div class="frase" id="rFrase"></div>
     <h2>Resultados de tu hogar</h2>
     <div class="chip"><i class="punto"></i><span id="rSaludo"></span></div>
     <div class="titulo-sec"><span>Resumen anual</span></div>
+    <div class="frase" id="rFrase"></div>
     <div class="stats">
       <div class="stat grande-card basura">
         <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></div>
@@ -413,7 +414,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="barra"><div id="rBarra"></div></div>
       <p id="rMsg"></p>
     </div>
-    <button onclick="nuevoCalculo()">Hacer mi propio cálculo</button>
+    <div class="fila nav">
+      <button class="btn-atras" onclick="nuevoCalculo()">Hacer mi propio cálculo</button>
+      <button onclick="ir(4)">Ver recomendaciones</button>
+    </div>
   </section>
 </div>
 <footer>Objetivo: concientizar sobre el impacto de los residuos y promover hábitos de gestión responsable en el hogar.</footer>
@@ -836,6 +840,7 @@ function mostrarCompartido(){
   const nom=(p[0]||"Tu hogar").slice(0,40),per=Math.max(1,parseInt(p[1])||1),
         anual=parseFloat(p[2]),comp=parseFloat(p[3]),ac=parseInt(p[4]),tot=parseInt(p[5]);
   if(![anual,comp,ac,tot].every(Number.isFinite)||tot<=0)return false;
+  Object.assign(estado,{nombre:nom,personas:per,anual:anual,compost:comp,aciertos:ac,total:tot,compartido:true});
   document.getElementById("rSaludo").textContent=`${nom} · ${per} ${per===1?"persona":"personas"}`;
   document.getElementById("rNota").textContent=`${ac} de ${tot} aciertos`;
   document.getElementById("rMsg").textContent=ac>=5?"¡Excelente clasificador!":"¡Sigue practicando!";
@@ -863,7 +868,8 @@ function cargarFrase(){
     im.src=CARPETA_IMG+cand[k];
   })(0);
 }
-function nuevoCalculo(){ history.replaceState(null,"",location.pathname+location.search); reiniciar(); }
+function atrasReco(){ ir(estado.compartido?6:3); }
+function nuevoCalculo(){ estado.compartido=false; history.replaceState(null,"",location.pathname+location.search); reiniciar(); }
 
 function reiniciar(){ document.getElementById("nombre").value=""; document.getElementById("error").textContent=""; document.getElementById("personas").value=3; ir(1); }
 
